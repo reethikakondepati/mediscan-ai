@@ -221,8 +221,8 @@ http://127.0.0.1:5000/
 ## 👩‍💻 Author
 
 **Reethika Kondepati**  
-**Mail:** reethikakondepati9@gmail.com
-🎓 **B.Tech** in Information Technology  
+📧 **Email:** reethikakondepati9@gmail.com  
+🎓 **B.Tech in Information Technology**
 
 ---
 

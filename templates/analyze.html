@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analyze Report — MediScan AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="analyze-page">
+<div class="bg-particles">
+    <div class="particle"></div><div class="particle"></div><div class="particle"></div>
+    <div class="particle"></div><div class="particle"></div>
+</div>
+
+<nav class="navbar">
+    <div class="nav-brand">
+        <a href="/" style="text-decoration:none;display:flex;align-items:center;gap:8px;">
+            <span class="nav-icon">🏥</span>
+            <span class="nav-title">MediScan <span class="highlight">AI</span></span>
+        </a>
+    </div>
+    <div class="nav-links">
+        <a href="/" class="nav-link">Home</a>
+        <a href="/analyze" class="nav-link active">Analyze</a>
+        <a href="/dashboard" class="nav-link">Dashboard</a>
+        <a href="/logout" class="nav-link logout-link">Logout</a>
+    </div>
+</nav>
+
+<div class="page-header">
+    <div class="page-header-content">
+        <div class="badge">🔬 AI-Powered Analysis Engine</div>
+        <h1>Upload Your <span class="gradient-text">Medical Report</span></h1>
+        <p>Securely upload your file and our AI will decode it for you in seconds</p>
+    </div>
+</div>
+
+<div class="analyze-container">
+    <div class="upload-section">
+        <form method="post" enctype="multipart/form-data" id="uploadForm" onsubmit="handleSubmit(event)">
+            <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+                <div class="drop-zone-content">
+                    <div class="upload-icon animate-bounce">📂</div>
+                    <h3>Drop your file here</h3>
+                    <p>or <span class="click-text">click to browse</span></p>
+                    <div class="file-formats">
+                        <span class="format-tag">📄 PDF</span>
+                        <span class="format-tag">🖼️ JPG</span>
+                        <span class="format-tag">🖼️ PNG</span>
+                        <span class="format-tag">📝 TXT</span>
+                    </div>
+                </div>
+                <input type="file" name="report" id="fileInput" accept=".pdf,.jpg,.jpeg,.png,.txt" required style="display:none" onchange="handleFileSelect(this)">
+            </div>
+
+            <div class="file-preview" id="filePreview" style="display:none">
+                <div class="file-preview-content">
+                    <span class="file-icon" id="fileIcon">📄</span>
+                    <div class="file-info">
+                        <div class="file-name" id="fileName">report.pdf</div>
+                        <div class="file-size" id="fileSize">2.4 MB</div>
+                    </div>
+                    <button type="button" class="remove-file" onclick="removeFile()">✕</button>
+                </div>
+                <div class="file-progress"><div class="file-progress-bar"></div></div>
+            </div>
+
+            {% if error %}
+            <div class="error-alert"><span>⚠️</span><span>{{ error }}</span></div>
+            {% endif %}
+
+            <button type="submit" class="btn-analyze" id="analyzeBtn">
+                <span id="btnText">🧠 Analyze My Report</span>
+                <div class="btn-loader" id="btnLoader" style="display:none">
+                    <div class="loader-dots"><div></div><div></div><div></div></div>
+                    <span>Analyzing...</span>
+                </div>
+            </button>
+        </form>
+
+        <div class="privacy-note">
+            <span>🔒</span>
+            <span>Your file is processed securely. Reports are saved to your personal account.</span>
+        </div>
+    </div>
+
+    <div class="info-panel">
+        <div class="info-card">
+            <h3>🤖 What our AI Analyzes</h3>
+            <ul class="info-list">
+                <li>⚠️ Abnormal values & findings</li>
+                <li>💬 Plain-language explanations</li>
+                <li>🏥 Possible medical conditions</li>
+                <li>📊 Severity assessment</li>
+                <li>🩺 Recommended next steps</li>
+                <li>📈 Comparative trend analysis</li>
+            </ul>
+        </div>
+
+        <div class="info-card">
+            <h3>📋 Supported File Types</h3>
+            <div class="file-type-grid">
+                <div class="file-type-item"><span>📄</span><div><strong>PDF</strong><small>Lab reports, prescriptions</small></div></div>
+                <div class="file-type-item"><span>🖼️</span><div><strong>JPG / PNG</strong><small>Scanned or photo reports</small></div></div>
+                <div class="file-type-item"><span>📝</span><div><strong>TXT</strong><small>Plain text reports</small></div></div>
+            </div>
+        </div>
+
+        <div class="info-card tips-card">
+            <h3>💡 Tips for Best Results</h3>
+            <p>✅ Use clear, high-resolution scans</p>
+            <p>✅ Ensure text is readable in images</p>
+            <p>✅ Upload complete reports (all pages)</p>
+            <p>✅ Include reference ranges if available</p>
+        </div>
+
+        <div class="disclaimer-card">
+            <span>⚕️</span>
+            <p>This tool is <strong>not a diagnostic tool</strong>. Results are for educational purposes only. Always consult a qualified medical professional.</p>
+        </div>
+    </div>
+</div>
+
+<div class="loading-overlay" id="loadingOverlay" style="display:none">
+    <div class="loading-content">
+        <div class="loading-animation">
+            <div class="pulse-ring"></div>
+            <div class="pulse-ring delay-1"></div>
+            <div class="pulse-ring delay-2"></div>
+            <span class="loading-icon">🧬</span>
+        </div>
+        <h3>Analyzing Your Report...</h3>
+        <p id="loadingMsg">Extracting text from your file</p>
+        <div class="loading-steps">
+            <div class="loading-step active" id="step1">📤 File Uploaded</div>
+            <div class="loading-step" id="step2">📖 Reading Content</div>
+            <div class="loading-step" id="step3">🤖 AI Processing</div>
+            <div class="loading-step" id="step4">✨ Generating Report</div>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='main.js') }}"></script>
+</body>
+</html>

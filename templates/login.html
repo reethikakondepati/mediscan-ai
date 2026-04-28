@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login — MediScan AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="auth-page">
+<div class="bg-particles">
+    <div class="particle"></div><div class="particle"></div><div class="particle"></div>
+</div>
+
+<nav class="navbar">
+    <div class="nav-brand">
+        <a href="/" style="text-decoration:none;display:flex;align-items:center;gap:8px;">
+            <span class="nav-icon">🏥</span>
+            <span class="nav-title">MediScan <span class="highlight">AI</span></span>
+        </a>
+    </div>
+    <div class="nav-links">
+        <a href="/" class="nav-link">Home</a>
+        <a href="/register" class="nav-link">Register</a>
+    </div>
+</nav>
+
+<div class="auth-container">
+    <div class="auth-card animate-slide-up">
+        <div class="auth-header">
+            <div class="auth-icon">🔐</div>
+            <h2>Welcome Back</h2>
+            <p>Sign in to your MediScan AI account</p>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, msg in messages %}
+        <div class="alert alert-{{ category }}">{{ msg }}</div>
+        {% endfor %}
+        {% endwith %}
+
+        {% if error %}
+        <div class="alert alert-danger">⚠️ {{ error }}</div>
+        {% endif %}
+
+        <form method="post" class="auth-form">
+            <div class="form-group">
+                <label>Username</label>
+                <div class="input-wrap">
+                    <span class="input-icon">👤</span>
+                    <input type="text" name="username" placeholder="Your username" required autocomplete="username">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <div class="input-wrap">
+                    <span class="input-icon">🔒</span>
+                    <input type="password" name="password" placeholder="Your password" required autocomplete="current-password">
+                </div>
+            </div>
+            <button type="submit" class="btn-auth">🚀 Sign In</button>
+        </form>
+
+        <p class="auth-switch">Don't have an account? <a href="/register">Register here</a></p>
+    </div>
+</div>
+</body>
+</html>

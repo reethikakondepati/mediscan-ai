@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analysis Results — MediScan AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="result-page">
+
+<div class="bg-particles">
+    <div class="particle"></div><div class="particle"></div><div class="particle"></div>
+</div>
+
+<nav class="navbar">
+    <div class="nav-brand">
+        <a href="/" style="text-decoration:none;display:flex;align-items:center;gap:8px;">
+            <span class="nav-icon">🏥</span>
+            <span class="nav-title">MediScan <span class="highlight">AI</span></span>
+        </a>
+    </div>
+    <div class="nav-links">
+        <a href="/" class="nav-link">Home</a>
+        <a href="/analyze" class="nav-link">Analyze</a>
+        <a href="/dashboard" class="nav-link">Dashboard</a>
+        <a href="/logout" class="nav-link logout-link">Logout</a>
+    </div>
+</nav>
+
+<!-- 🚨 SAFETY WARNING — shown only for severity level 3 -->
+{% if data.severity_level == 3 %}
+<div class="safety-warning-banner animate-pop">
+    <div class="safety-warning-inner">
+        <div class="safety-icon">🚨</div>
+        <div class="safety-text">
+            <strong>Critical Health Alert — Immediate Attention Required</strong>
+            <p>Your report indicates a severe or critical condition. Please visit the nearest hospital or emergency room immediately. Do not delay seeking professional medical care.</p>
+        </div>
+        <div class="safety-actions">
+            <a href="tel:112" class="btn-emergency">📞 Call Emergency</a>
+            <a href="https://www.google.com/maps/search/hospital+near+me" target="_blank" class="btn-hospital">🏥 Find Nearest Hospital</a>
+        </div>
+    </div>
+</div>
+{% elif data.severity_level == 2 %}
+<div class="safety-warning-banner moderate-banner animate-pop">
+    <div class="safety-warning-inner">
+        <div class="safety-icon">⚠️</div>
+        <div class="safety-text">
+            <strong>Moderate Health Concern — Doctor Visit Recommended</strong>
+            <p>Your report shows concerning findings that need medical attention. Please schedule an appointment with your doctor soon.</p>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="result-header">
+    <div class="result-header-content">
+        <div class="success-badge animate-pop">✅ Analysis Complete</div>
+        <h1>Your Report <span class="gradient-text">Results</span></h1>
+        <p>AI has analyzed <strong>{{ data.filename }}</strong> — here's what it found 🔍</p>
+    </div>
+</div>
+
+<div class="results-container">
+
+    <!-- Summary Cards -->
+    <div class="summary-row animate-slide-up">
+        <div class="summary-card red">
+            <div class="summary-card-icon">⚠️</div>
+            <div class="summary-card-label">Abnormal Findings</div>
+        </div>
+        <div class="summary-card blue">
+            <div class="summary-card-icon">💬</div>
+            <div class="summary-card-label">Simplified</div>
+        </div>
+        <div class="summary-card purple">
+            <div class="summary-card-icon">🏥</div>
+            <div class="summary-card-label">Conditions Found</div>
+        </div>
+        <div class="summary-card orange">
+            <div class="summary-card-icon">📊</div>
+            <div class="summary-card-label">Severity Rated</div>
+        </div>
+    </div>
+
+    <div class="results-grid">
+        {% if data.abnormal_findings %}
+        <div class="result-section-card abnormal animate-card" style="animation-delay:0.1s">
+            <div class="section-card-header">
+                <div class="section-icon-wrap red-bg">⚠️</div>
+                <div><h3>Abnormal Findings</h3><p>Values or results outside normal range</p></div>
+            </div>
+            <div class="section-card-body">{{ data.abnormal_findings | replace('\n','<br>') | safe }}</div>
+        </div>
+        {% endif %}
+
+        {% if data.simple_explanation %}
+        <div class="result-section-card explanation animate-card" style="animation-delay:0.2s">
+            <div class="section-card-header">
+                <div class="section-icon-wrap blue-bg">💬</div>
+                <div><h3>Simple Explanation</h3><p>What these findings mean in plain English</p></div>
+            </div>
+            <div class="section-card-body">{{ data.simple_explanation | replace('\n','<br>') | safe }}</div>
+        </div>
+        {% endif %}
+
+        {% if data.possible_conditions %}
+        <div class="result-section-card conditions animate-card" style="animation-delay:0.3s">
+            <div class="section-card-header">
+                <div class="section-icon-wrap purple-bg">🏥</div>
+                <div><h3>Possible Conditions</h3><p>Not a diagnosis — consult your doctor</p></div>
+            </div>
+            <div class="section-card-body">{{ data.possible_conditions | replace('\n','<br>') | safe }}</div>
+        </div>
+        {% endif %}
+
+        {% if data.severity %}
+        <div class="result-section-card severity animate-card" style="animation-delay:0.4s">
+            <div class="section-card-header">
+                <div class="section-icon-wrap orange-bg">📊</div>
+                <div><h3>Severity Assessment</h3><p>How urgent is attention needed</p></div>
+            </div>
+            <div class="section-card-body">{{ data.severity | replace('\n','<br>') | safe }}</div>
+        </div>
+        {% endif %}
+
+        {% if data.next_steps %}
+        <div class="result-section-card next-steps animate-card" style="animation-delay:0.5s">
+            <div class="section-card-header">
+                <div class="section-icon-wrap green-bg">🩺</div>
+                <div><h3>Recommended Next Steps</h3><p>What you should do now</p></div>
+            </div>
+            <div class="section-card-body">{{ data.next_steps | replace('\n','<br>') | safe }}</div>
+        </div>
+        {% endif %}
+
+        {% if not data.abnormal_findings and not data.simple_explanation %}
+        <div class="result-section-card full-report animate-card" style="animation-delay:0.1s;grid-column:1/-1">
+            <div class="section-card-header">
+                <div class="section-icon-wrap blue-bg">📋</div>
+                <div><h3>Full AI Analysis</h3><p>Complete breakdown of your medical report</p></div>
+            </div>
+            <div class="section-card-body">{{ data.raw | replace('\n','<br>') | safe }}</div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Disclaimer -->
+    <div class="result-disclaimer animate-card" style="animation-delay:0.6s">
+        <div class="disclaimer-icon">⚕️</div>
+        <div class="disclaimer-text">
+            <strong>Medical Disclaimer</strong>
+            <p>{% if data.disclaimer %}{{ data.disclaimer }}{% else %}This analysis is generated by AI and is for <strong>informational purposes only</strong>. It is NOT a medical diagnosis. Always consult a qualified healthcare professional before making any medical decisions.{% endif %}</p>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="result-actions animate-card" style="animation-delay:0.7s">
+        <a href="/analyze" class="btn-primary"><span>🔬 Analyze Another Report</span></a>
+
+        {% if data.report_id %}
+        <button class="btn-secondary" onclick="doCompare({{ data.report_id }})">
+            📊 Comparative Analysis
+        </button>
+        {% endif %}
+
+        <button onclick="window.print()" class="btn-secondary">🖨️ Print Results</button>
+        <a href="/dashboard" class="btn-ghost">📂 My Dashboard</a>
+    </div>
+
+    <p class="share-note">💡 Pro tip: Take a screenshot or print these results to share with your doctor for a more informed consultation.</p>
+</div>
+
+<!-- Comparative Analysis Modal -->
+<div class="modal-overlay" id="compareModal" style="display:none">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3>📊 Comparative Health Analysis</h3>
+            <button class="modal-close" onclick="closeModal()">✕</button>
+        </div>
+        <div class="modal-body" id="compareBody">
+            <div class="modal-loading">
+                <div class="loading-spinner"></div>
+                <p>Analyzing your health trend...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='main.js') }}"></script>
+<script>
+function doCompare(reportId) {
+    document.getElementById('compareModal').style.display = 'flex';
+    document.getElementById('compareBody').innerHTML = `
+        <div class="modal-loading">
+            <div class="loading-spinner"></div>
+            <p>Comparing with your previous reports...</p>
+        </div>`;
+    fetch('/compare/' + reportId)
+        .then(r => r.json())
+        .then(data => {
+            if (data.error) {
+                document.getElementById('compareBody').innerHTML =
+                    `<div class="compare-error">⚠️ ${data.error}</div>`;
+            } else {
+                document.getElementById('compareBody').innerHTML =
+                    `<div class="compare-result">${data.analysis.replace(/\n/g, '<br>')}</div>`;
+            }
+        })
+        .catch(() => {
+            document.getElementById('compareBody').innerHTML =
+                `<div class="compare-error">⚠️ Failed to load comparison. Please try again.</div>`;
+        });
+}
+function closeModal() {
+    document.getElementById('compareModal').style.display = 'none';
+}
+document.getElementById('compareModal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+});
+</script>
+</body>
+</html>

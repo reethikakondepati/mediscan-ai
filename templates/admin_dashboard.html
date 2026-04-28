@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard — MediScan AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="dashboard-page">
+<div class="bg-particles">
+    <div class="particle"></div><div class="particle"></div><div class="particle"></div>
+</div>
+
+<!-- ADMIN NAVBAR -->
+<nav class="navbar admin-navbar">
+    <div class="nav-brand">
+        <a href="/admin/dashboard" style="text-decoration:none;display:flex;align-items:center;gap:8px;">
+            <span class="nav-icon">🛡️</span>
+            <span class="nav-title">MediScan <span class="highlight">Admin</span></span>
+        </a>
+    </div>
+    <div class="nav-links">
+        <span class="admin-nav-badge">🛡️ Administrator</span>
+        <a href="/admin/analyze" class="nav-link">🔬 Analyze Report</a>
+        <a href="/admin/logout" class="nav-link logout-link">Logout</a>
+    </div>
+</nav>
+
+<div class="dashboard-container">
+
+    <!-- Header -->
+    <div class="dash-header animate-slide-up">
+        <div>
+            <h1>Admin <span class="gradient-text admin-gradient">Control Panel</span> 🛡️</h1>
+            <p>Manage all users, their reports, and platform activity</p>
+        </div>
+        <a href="/admin/analyze" class="btn-primary" style="background:linear-gradient(135deg,#FFB300,#FF6B9D);">
+            🔬 Analyze Report
+        </a>
+    </div>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, msg in messages %}
+    <div class="alert alert-{{ category }}">{{ msg }}</div>
+    {% endfor %}
+    {% endwith %}
+
+    <!-- Platform Stats -->
+    <div class="dash-stats animate-slide-up" style="grid-template-columns:repeat(3,1fr);">
+        <div class="stat-card total" style="border-color:rgba(255,179,0,0.4);">
+            <div class="stat-icon">👥</div>
+            <div class="stat-info">
+                <div class="stat-num-big" style="color:#FFB300;">{{ total_users }}</div>
+                <div class="stat-lbl">Registered Users</div>
+            </div>
+        </div>
+        <div class="stat-card mild" style="border-color:rgba(108,99,255,0.4);">
+            <div class="stat-icon">📋</div>
+            <div class="stat-info">
+                <div class="stat-num-big" style="color:var(--primary);">{{ total_reports }}</div>
+                <div class="stat-lbl">Total Reports</div>
+            </div>
+        </div>
+        <div class="stat-card critical">
+            <div class="stat-icon">🚨</div>
+            <div class="stat-info">
+                <div class="stat-num-big" style="color:var(--danger);">{{ total_critical }}</div>
+                <div class="stat-lbl">Critical Reports</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Users Table -->
+    <div class="reports-card animate-card" style="margin-top:0;">
+        <div class="reports-card-header">
+            <h3>👥 All Registered Users</h3>
+            <span class="badge-count">{{ total_users }} users</span>
+        </div>
+
+        {% if users_data %}
+        <div class="admin-users-table">
+            <!-- Table Header -->
+            <div class="admin-table-header">
+                <span>User</span>
+                <span>Email</span>
+                <span>Joined</span>
+                <span style="text-align:center;">Reports</span>
+                <span style="text-align:center;">Critical</span>
+                <span style="text-align:right;">Actions</span>
+            </div>
+
+            {% for ud in users_data %}
+            <div class="admin-user-row {% if ud.critical > 0 %}has-critical{% endif %}">
+
+                <!-- Avatar + name -->
+                <div class="admin-user-cell">
+                    <div class="admin-avatar">{{ ud.user.username[0].upper() }}</div>
+                    <div>
+                        <div class="admin-username">{{ ud.user.username }}</div>
+                        <div class="admin-user-id">ID #{{ ud.user.id }}</div>
+                    </div>
+                </div>
+
+                <!-- Email -->
+                <div class="admin-user-cell admin-email">{{ ud.user.email }}</div>
+
+                <!-- Joined -->
+                <div class="admin-user-cell admin-date">{{ ud.user.created_at[:10] }}</div>
+
+                <!-- Report count -->
+                <div class="admin-user-cell" style="justify-content:center;">
+                    <span class="sev-badge sev-1" style="background:rgba(108,99,255,0.15);color:var(--primary);">
+                        {{ ud.total }}
+                    </span>
+                </div>
+
+                <!-- Critical count -->
+                <div class="admin-user-cell" style="justify-content:center;">
+                    {% if ud.critical > 0 %}
+                    <span class="sev-badge sev-3">🚨 {{ ud.critical }}</span>
+                    {% else %}
+                    <span class="sev-badge sev-0">—</span>
+                    {% endif %}
+                </div>
+
+                <!-- Actions -->
+                <div class="admin-user-cell admin-actions">
+                    <a href="/admin/user/{{ ud.user.id }}" class="btn-sm-view">View Reports</a>
+                    <form method="post" action="/admin/user/{{ ud.user.id }}/delete" style="display:inline;"
+                          onsubmit="return confirm('Delete user \'{{ ud.user.username }}\' and ALL their {{ ud.total }} reports? This cannot be undone.')">
+                        <button type="submit" class="btn-sm-del">🗑 Delete User</button>
+                    </form>
+                </div>
+
+            </div>
+            {% endfor %}
+        </div>
+
+        {% else %}
+        <div class="empty-reports">
+            <div style="font-size:3rem;">👥</div>
+            <p>No users registered yet.</p>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+
+<script src="{{ url_for('static', filename='main.js') }}"></script>
+<script>
+// Override MediBot chat endpoint for admin
+window.MEDIBOT_CHAT_URL = '/admin/chat';
+</script>
+</body>
+</html>

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Detail — MediScan Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="dashboard-page">
+<div class="bg-particles">
+    <div class="particle"></div><div class="particle"></div><div class="particle"></div>
+</div>
+
+<!-- ADMIN NAVBAR -->
+<nav class="navbar admin-navbar">
+    <div class="nav-brand">
+        <a href="/admin/dashboard" style="text-decoration:none;display:flex;align-items:center;gap:8px;">
+            <span class="nav-icon">🛡️</span>
+            <span class="nav-title">MediScan <span class="highlight">Admin</span></span>
+        </a>
+    </div>
+    <div class="nav-links">
+        <span class="admin-nav-badge">🛡️ Administrator</span>
+        <a href="/admin/dashboard" class="nav-link">← All Users</a>
+        <a href="/admin/analyze" class="nav-link">🔬 Analyze</a>
+        <a href="/admin/logout" class="nav-link logout-link">Logout</a>
+    </div>
+</nav>
+
+<div class="dashboard-container">
+
+    <!-- Header -->
+    <div class="dash-header animate-slide-up">
+        <div>
+            <h1>
+                <span class="admin-avatar-large">{{ user.username[0].upper() }}</span>
+                <span class="gradient-text admin-gradient">{{ user.username }}</span>
+            </h1>
+            <p>{{ user.email }} &nbsp;·&nbsp; Member since {{ user.created_at[:10] }}</p>
+        </div>
+        <!-- Delete user button -->
+        <form method="post" action="/admin/user/{{ user.id }}/delete"
+              onsubmit="return confirm('Permanently delete user \'{{ user.username }}\' and ALL {{ total }} reports? This cannot be undone.')">
+            <button type="submit" class="btn-danger-big">🗑 Delete This User</button>
+        </form>
+    </div>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, msg in messages %}
+    <div class="alert alert-{{ category }}">{{ msg }}</div>
+    {% endfor %}
+    {% endwith %}
+
+    <!-- Stats -->
+    <div class="dash-stats animate-slide-up">
+        <div class="stat-card total">
+            <div class="stat-icon">📋</div>
+            <div class="stat-info">
+                <div class="stat-num-big">{{ total }}</div>
+                <div class="stat-lbl">Total Reports</div>
+            </div>
+        </div>
+        <div class="stat-card mild">
+            <div class="stat-icon">✅</div>
+            <div class="stat-info">
+                <div class="stat-num-big">{{ mild }}</div>
+                <div class="stat-lbl">Mild / Normal</div>
+            </div>
+        </div>
+        <div class="stat-card moderate">
+            <div class="stat-icon">⚠️</div>
+            <div class="stat-info">
+                <div class="stat-num-big">{{ moderate }}</div>
+                <div class="stat-lbl">Moderate</div>
+            </div>
+        </div>
+        <div class="stat-card critical">
+            <div class="stat-icon">🚨</div>
+            <div class="stat-info">
+                <div class="stat-num-big">{{ critical }}</div>
+                <div class="stat-lbl">Critical</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reports List -->
+    <div class="reports-card animate-card">
+        <div class="reports-card-header">
+            <h3>📂 Reports by {{ user.username }}</h3>
+            <span class="badge-count">{{ total }} total</span>
+        </div>
+
+        {% if reports %}
+        <div class="reports-list">
+            {% for r in reports %}
+            <div class="report-row {% if r['severity_level'] == 3 %}row-critical{% elif r['severity_level'] == 2 %}row-moderate{% endif %}">
+                <div class="report-row-icon">
+                    {% if r['severity_level'] == 3 %}🚨
+                    {% elif r['severity_level'] == 2 %}⚠️
+                    {% else %}📄{% endif %}
+                </div>
+                <div class="report-row-info">
+                    <div class="report-row-name">{{ r['filename'] }}</div>
+                    <div class="report-row-date">{{ r['uploaded_at'][:16] }}</div>
+                </div>
+                <div class="report-row-severity">
+                    <span class="sev-badge sev-{{ r['severity_level'] }}">
+                        {% if r['severity_level'] == 3 %}Critical
+                        {% elif r['severity_level'] == 2 %}Moderate
+                        {% elif r['severity_level'] == 1 %}Mild
+                        {% else %}Unknown{% endif %}
+                    </span>
+                </div>
+                <div class="report-row-actions">
+                    <a href="/admin/report/{{ r['id'] }}" class="btn-sm-view">View</a>
+                    <form method="post" action="/admin/report/{{ r['id'] }}/delete" style="display:inline"
+                          onsubmit="return confirm('Delete this report? This cannot be undone.')">
+                        <button type="submit" class="btn-sm-del">🗑 Delete</button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-reports">
+            <div style="font-size:3rem;">📭</div>
+            <p>This user has no uploaded reports yet.</p>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+
+<script src="{{ url_for('static', filename='main.js') }}"></script>
+<script>
+window.MEDIBOT_CHAT_URL = '/admin/chat';
+</script>
+</body>
+</html>
